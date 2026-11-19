@@ -48,7 +48,7 @@ sudo install -m 755 icalBuddy /usr/local/bin/icalbuddy
 icalbuddy -V
 ```
 
-The server looks for `icalbuddy` on `PATH`, then in `/opt/homebrew/bin` and `/usr/local/bin`. If you install it elsewhere, set `ICALBUDDY_PATH` to the binary's path.
+The server looks for `icalbuddy` on `PATH`, then in `/opt/homebrew/bin` and `/usr/local/bin`, and finally falls back to the prebuilt universal binary bundled at `lib/icalBuddy` (icalBuddy 1.10.1, MIT; see [LICENSE](LICENSE)). If you install it elsewhere, set `ICALBUDDY_PATH` to the binary's path.
 
 ### macOS permissions (required)
 
@@ -79,7 +79,7 @@ On each run it:
 
 1. Creates `.venv` with Python 3.11+ and installs the package (again whenever `pyproject.toml` changes).
 2. Loads `.env`. If neither `ICAL_MCP_API_KEY` nor `ICAL_MCP_API_KEY_FILE` is set, it generates a key and saves it to `.env` (mode `600`).
-3. With the `icalbuddy` read backend, installs icalbuddy via `brew install ical-buddy` if it is missing, and warns if it cannot read any calendars (usually a missing Calendar permission).
+3. With the `icalbuddy` read backend, uses the bundled `lib/icalBuddy` if icalbuddy is not on `PATH`, and warns if it cannot read any calendars (usually a missing Calendar permission).
 4. Prints the local, LAN, and health-check URLs, then starts the server.
 
 Put any of the environment variables below in `.env` to make them persistent, for example:

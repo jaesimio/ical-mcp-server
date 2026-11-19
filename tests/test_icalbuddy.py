@@ -139,3 +139,14 @@ def test_parse_real_icalbuddy_output_holidays():
     assert all(e.calendar == "대한민국 공휴일" and e.uid and e.title for e in events)
     xmas = [e for e in events if e.start == "2026-12-25"]
     assert xmas and xmas[0].all_day
+
+
+def test_icalbuddy_path_falls_back_to_bundled_binary(monkeypatch):
+    monkeypatch.delenv("ICALBUDDY_PATH", raising=False)
+    monkeypatch.setattr(icalbuddy.shutil, "which", lambda _: None)
+    real_access = icalbuddy.os.access
+    monkeypatch.setattr(
+        icalbuddy.os, "access", lambda p, m: str(p) == str(icalbuddy.BUNDLED_ICALBUDDY) and real_access(p, m)
+    )
+    assert icalbuddy.icalbuddy_path() == str(icalbuddy.BUNDLED_ICALBUDDY)
+    assert icalbuddy.BUNDLED_ICALBUDDY.is_file()

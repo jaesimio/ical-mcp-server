@@ -48,7 +48,7 @@ sudo install -m 755 icalBuddy /usr/local/bin/icalbuddy
 icalbuddy -V
 ```
 
-서버는 `PATH`의 `icalbuddy`를 먼저 찾고, 없으면 `/opt/homebrew/bin`, `/usr/local/bin` 순서로 찾습니다. 다른 위치에 설치했다면 `ICALBUDDY_PATH`에 실행 파일 경로를 지정하세요.
+서버는 `PATH`의 `icalbuddy`를 먼저 찾고, 없으면 `/opt/homebrew/bin`, `/usr/local/bin` 순서로 찾으며, 마지막으로 저장소에 포함된 유니버설 바이너리 `lib/icalBuddy`(icalBuddy 1.10.1, MIT, [LICENSE](LICENSE) 참고)를 사용합니다. 다른 위치에 설치했다면 `ICALBUDDY_PATH`에 실행 파일 경로를 지정하세요.
 
 ### macOS 권한 (필수)
 
@@ -79,7 +79,7 @@ Calendar.app에 iCloud 계정이 연결돼 있어야 변경 사항이 iCloud로 
 
 1. Python 3.11 이상으로 `.venv`를 만들고 패키지를 설치합니다. `pyproject.toml`이 바뀌면 다시 설치합니다.
 2. `.env`를 읽습니다. `ICAL_MCP_API_KEY`와 `ICAL_MCP_API_KEY_FILE`이 모두 없으면 키를 생성해 `.env`(권한 `600`)에 저장합니다.
-3. 조회 백엔드가 `icalbuddy`이면, icalbuddy가 없을 때 `brew install ical-buddy`로 설치하고 캘린더를 읽지 못하면 경고합니다(대개 캘린더 권한 누락).
+3. 조회 백엔드가 `icalbuddy`이면, `PATH`에 icalbuddy가 없을 때 포함된 `lib/icalBuddy`를 사용하고 캘린더를 읽지 못하면 경고합니다(대개 캘린더 권한 누락).
 4. 로컬, LAN, 헬스체크 URL을 출력하고 서버를 시작합니다.
 
 아래 환경변수는 `.env`에 적어 두면 매번 적용됩니다. 예:

@@ -123,15 +123,15 @@ done
 READ_BACKEND="$(printf '%s' "$READ_BACKEND" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
 
 if [[ "$READ_BACKEND" == "icalbuddy" || -z "$READ_BACKEND" ]]; then
-  if ! command -v icalbuddy >/dev/null 2>&1; then
-    if command -v brew >/dev/null 2>&1; then
-      info "icalbuddy 설치 중 (brew install ical-buddy)"
-      brew install ical-buddy
-    else
-      die "icalbuddy가 없습니다. 'brew install ical-buddy'로 설치하거나 ICAL_MCP_READ_BACKEND=osascript를 사용하세요."
-    fi
+  # 서버와 같은 순서: ICALBUDDY_PATH → PATH → 저장소에 포함된 lib/icalBuddy
+  ICALBUDDY_BIN="${ICALBUDDY_PATH:-$(command -v icalbuddy || true)}"
+  if [[ -z "$ICALBUDDY_BIN" && -x "$ROOT/lib/icalBuddy" ]]; then
+    ICALBUDDY_BIN="$ROOT/lib/icalBuddy"
+    info "PATH에 icalbuddy가 없어 포함된 바이너리를 사용합니다: $ICALBUDDY_BIN"
   fi
-  if ! icalbuddy calendars 2>&1 | grep -q '[^[:space:]]'; then
+  [[ -n "$ICALBUDDY_BIN" ]] ||
+    die "icalbuddy가 없습니다. 'brew install ical-buddy'로 설치하거나 ICAL_MCP_READ_BACKEND=osascript를 사용하세요."
+  if ! "$ICALBUDDY_BIN" calendars 2>&1 | grep -q '[^[:space:]]'; then
     warn "icalbuddy가 캘린더를 읽지 못했습니다."
     warn "시스템 설정 > 개인정보 보호 및 보안 > 캘린더 에서 이 터미널 앱에 '전체 접근'을 허용하세요."
     warn "또는 ICAL_MCP_READ_BACKEND=osascript 로 osascript(EventKit) 조회를 사용할 수 있습니다."

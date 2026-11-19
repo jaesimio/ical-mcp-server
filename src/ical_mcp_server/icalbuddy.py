@@ -10,6 +10,7 @@ import shutil
 import unicodedata
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
+from pathlib import Path
 
 from mcp.server.mcpserver.exceptions import ToolError
 
@@ -34,14 +35,19 @@ class ICalBuddyError(ToolError):
     """Anticipated failure: MCP returns its message to the client (other exceptions are masked)."""
 
 
+# Prebuilt universal binary shipped in the repository (see LICENSE), used as the last resort.
+BUNDLED_ICALBUDDY = Path(__file__).resolve().parents[2] / "lib" / "icalBuddy"
+
+
 def icalbuddy_path() -> str:
+    """ICALBUDDY_PATH, then `icalbuddy` on PATH, Homebrew locations, and finally the bundled binary."""
     path = os.environ.get("ICALBUDDY_PATH") or shutil.which("icalbuddy")
-    if not path:
-        for candidate in ("/opt/homebrew/bin/icalbuddy", "/usr/local/bin/icalbuddy"):
-            if os.path.exists(candidate):
-                return candidate
-        raise ICalBuddyError("icalbuddy not found. Install it (brew install ical-buddy) or set ICALBUDDY_PATH.")
-    return path
+    if path:
+        return path
+    for candidate in ("/opt/homebrew/bin/icalbuddy", "/usr/local/bin/icalbuddy", str(BUNDLED_ICALBUDDY)):
+        if os.access(candidate, os.X_OK):
+            return candidate
+    raise ICalBuddyError("icalbuddy not found. Install it (brew install ical-buddy) or set ICALBUDDY_PATH.")
 
 
 def subprocess_env() -> dict[str, str]:
