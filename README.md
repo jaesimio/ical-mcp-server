@@ -63,6 +63,35 @@ An iCloud account must be connected in Calendar.app for changes to sync to iClou
 
 ## Running
 
+### With `run.sh` (recommended)
+
+`run.sh` takes care of setup and then starts the server:
+
+```bash
+./run.sh                                         # port from .env (ICAL_MCP_PORT) or 8000
+./run.sh 8765                                    # a bare number is treated as the port
+./run.sh -p 8765 --path /mcp --log-level debug   # other options are passed to the server as-is
+./run.sh --read-backend osascript                # read via osascript (EventKit) instead of icalbuddy
+./run.sh --show-key                              # print the API key and connector settings, then exit
+```
+
+On each run it:
+
+1. Creates `.venv` with Python 3.11+ and installs the package (again whenever `pyproject.toml` changes).
+2. Loads `.env`. If neither `ICAL_MCP_API_KEY` nor `ICAL_MCP_API_KEY_FILE` is set, it generates a key and saves it to `.env` (mode `600`).
+3. With the `icalbuddy` read backend, installs icalbuddy via `brew install ical-buddy` if it is missing, and warns if it cannot read any calendars (usually a missing Calendar permission).
+4. Prints the local, LAN, and health-check URLs, then starts the server.
+
+Put any of the environment variables below in `.env` to make them persistent, for example:
+
+```bash
+ICAL_MCP_API_KEY=...
+ICAL_MCP_PORT=8765
+ICAL_MCP_READ_BACKEND=osascript
+```
+
+### Running the server directly
+
 ```bash
 # Generate an API key
 export ICAL_MCP_API_KEY="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
@@ -70,6 +99,8 @@ export ICAL_MCP_API_KEY="$(python3 -c 'import secrets; print(secrets.token_urlsa
 .venv/bin/ical-mcp-server --port 8765              # 0.0.0.0:8765/mcp
 .venv/bin/ical-mcp-server --host 0.0.0.0 -p 9000 --path /mcp
 ```
+
+### Options
 
 | Option / Environment variable | Default | Description |
 |---|---|---|

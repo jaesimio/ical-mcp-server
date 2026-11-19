@@ -143,7 +143,7 @@ info "MCP 서버 시작"
 echo "    로컬      : http://127.0.0.1:$PORT$MCP_PATH"
 echo "    LAN       : http://$LAN_IP:$PORT$MCP_PATH"
 echo "    헬스체크  : http://127.0.0.1:$PORT/health"
-echo "    커넥터 URL: https://<공인 도메인>/k/<API_KEY>$MCP_PATH   (키 확인: ./run.sh --show-key)"
+echo "    커넥터 URL: https://<공인 도메인>$MCP_PATH   (헤더: Authorization: Bearer <API_KEY>, 키 확인: ./run.sh --show-key)"
 echo
 
 exec "$VENV/bin/ical-mcp-server" "${ARGS[@]+"${ARGS[@]}"}"

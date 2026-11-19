@@ -63,6 +63,35 @@ Calendar.app에 iCloud 계정이 연결돼 있어야 변경 사항이 iCloud로 
 
 ## 실행
 
+### `run.sh`로 실행 (권장)
+
+`run.sh`가 준비 작업을 자동으로 처리한 뒤 서버를 시작합니다.
+
+```bash
+./run.sh                                         # .env의 ICAL_MCP_PORT 또는 8000 포트
+./run.sh 8765                                    # 숫자 하나만 주면 포트로 취급
+./run.sh -p 8765 --path /mcp --log-level debug   # 그 밖의 옵션은 서버에 그대로 전달
+./run.sh --read-backend osascript                # icalbuddy 대신 osascript(EventKit)로 조회
+./run.sh --show-key                              # API Key와 커넥터 설정값을 출력하고 종료
+```
+
+실행할 때마다 다음을 수행합니다.
+
+1. Python 3.11 이상으로 `.venv`를 만들고 패키지를 설치합니다. `pyproject.toml`이 바뀌면 다시 설치합니다.
+2. `.env`를 읽습니다. `ICAL_MCP_API_KEY`와 `ICAL_MCP_API_KEY_FILE`이 모두 없으면 키를 생성해 `.env`(권한 `600`)에 저장합니다.
+3. 조회 백엔드가 `icalbuddy`이면, icalbuddy가 없을 때 `brew install ical-buddy`로 설치하고 캘린더를 읽지 못하면 경고합니다(대개 캘린더 권한 누락).
+4. 로컬, LAN, 헬스체크 URL을 출력하고 서버를 시작합니다.
+
+아래 환경변수는 `.env`에 적어 두면 매번 적용됩니다. 예:
+
+```bash
+ICAL_MCP_API_KEY=...
+ICAL_MCP_PORT=8765
+ICAL_MCP_READ_BACKEND=osascript
+```
+
+### 서버 직접 실행
+
 ```bash
 # API Key 생성
 export ICAL_MCP_API_KEY="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
@@ -70,6 +99,8 @@ export ICAL_MCP_API_KEY="$(python3 -c 'import secrets; print(secrets.token_urlsa
 .venv/bin/ical-mcp-server --port 8765              # 0.0.0.0:8765/mcp
 .venv/bin/ical-mcp-server --host 0.0.0.0 -p 9000 --path /mcp
 ```
+
+### 옵션
 
 | 옵션 / 환경변수 | 기본값 | 설명 |
 |---|---|---|
@@ -79,6 +110,8 @@ export ICAL_MCP_API_KEY="$(python3 -c 'import secrets; print(secrets.token_urlsa
 | `ICAL_MCP_API_KEY` | (필수) | API Key. 쉼표로 구분해 여러 개를 등록할 수 있습니다(사용자별 키). |
 | `ICAL_MCP_API_KEY_FILE` | | 키 파일 경로. 한 줄에 하나씩 적습니다. |
 | `ICAL_MCP_ALLOW_URL_KEY` | `0` | `1`이면 URL(경로, 쿼리)로 전달한 키도 허용합니다. |
+| `--shutdown-timeout` / `ICAL_MCP_SHUTDOWN_TIMEOUT` | `5` | Ctrl+C/SIGTERM을 받았을 때 열린 연결을 기다리는 시간(초). 시간이 지나면 연결을 끊고 종료합니다. |
+| `--log-level` | `info` | 로그 레벨. 기본값(`info`)에서 get_events는 icalbuddy 명령, 반환 코드, stdout 앞부분, stderr, PATH/LANG/LC_ALL/TZ를 stderr에 기록합니다. |
 | `ICALBUDDY_PATH` | 자동 탐색 | icalbuddy 실행 파일 경로 |
 | `--read-backend` / `ICAL_MCP_READ_BACKEND` | `icalbuddy` | `list_calendars`/`get_events` 조회 방식: `icalbuddy` 또는 `osascript`. `osascript`는 JXA로 EventKit을 읽습니다(icalbuddy 불필요, 반복 일정 펼침, uid는 Calendar.app과 동일). 서버를 실행하는 앱에 캘린더 접근 권한이 필요하며, 처음 사용할 때 macOS 권한 창이 뜹니다. |
 
